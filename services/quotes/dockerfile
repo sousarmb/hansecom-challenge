@@ -1,0 +1,24 @@
+# Use the official PHP 8+ image with Apache
+FROM php:apache
+
+# Install required system packages
+RUN apt-get update &&\
+    apt-get install -y git unzip curl nano libicu-dev
+RUN docker-php-ext-install pdo pdo_mysql intl
+
+# Install Composer globally
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Setup virtual host
+COPY ./quotes.local.conf /etc/apache2/sites-available/
+
+# Enable website
+RUN a2enmod actions rewrite &&\
+    a2dissite 000* &&\
+    a2ensite quotes*
+
+# Expose Apache port
+EXPOSE 80

@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>{{ 'quote_request'|trans }} : {{ symbol }}</title>
+    </head>
+    <body>
+        <h1>{{ 'quote_request'|trans }}: {{ symbol }}</h1>
+        <h2>{{ 'quote_request_date'|trans }}: {{ quote.datetime_request }}
+        <div>
+            <ul>
+            {% for k, v in quote.quote %}
+                <li>{{ k }}: {{ v }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </body>
+</html>

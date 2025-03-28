@@ -1,0 +1,130 @@
+name: 'hansecom'
+
+services:
+  www:
+    build:
+      context: ./services/www  # Uses the custom Dockerfile in the "service/frontend" directory
+      dockerfile: dockerfile
+    container_name: hansecom
+    depends_on:
+      - quotes
+      - mysql
+      - rabbitmq
+      - mailpit
+    environment:
+      MYSQL_FRONTEND_DATABASE: hansecom
+      MYSQL_FRONTEND_USER: user
+      MYSQL_FRONTEND_PASSWORD: password
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - public_network
+      - internal_network
+    ports:
+      - "8080:80"
+    restart: always # ... Try to show the clients a message with some explanation if the service is down 
+    volumes:
+      - ./app/hansecom:/var/www/html
+      - ./services/www/init-app.sh:/docker-entrypoint-initapp.d/init-app.sh # Setup project
+    command: [ "bash", "/docker-entrypoint-initapp.d/init-app.sh" ]
+
+  quotes:
+    build:
+      context: ./services/quotes
+      dockerfile: dockerfile
+    container_name: quotes
+    depends_on:
+      - mysql
+    environment:
+      MYSQL_QUOTES_DATABASE: quotes
+      MYSQL_QUOTES_USER: user
+      MYSQL_QUOTES_PASSWORD: password
+    networks:
+      - public_network  # Needs internet access to install composer packages (needs workaround)
+      - internal_network
+    ports:
+      - "8888:80"
+    restart: on-failure:5
+    volumes:
+      - ./app/quotes:/var/www/html
+      - ./services/quotes/init-app.sh:/docker-entrypoint-initapp.d/init-app.sh # Setup project
+    command: [ "bash", "/docker-entrypoint-initapp.d/init-app.sh" ]
+
+  worker:
+    build:
+      context: ./services/worker
+      dockerfile: dockerfile
+    container_name: worker
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - public_network  # Needs internet access to install composer packages (needs workaround)
+      - internal_network
+    restart: on-failure:5
+    volumes:
+      - ./app/worker:/var/www/html
+      - ./services/worker/init-app.sh:/docker-entrypoint-initapp.d/init-app.sh # Setup project
+    command: [ "bash", "/docker-entrypoint-initapp.d/init-app.sh" ]
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_FRONTEND_DATABASE: hansecom
+      MYSQL_FRONTEND_USER: user
+      MYSQL_FRONTEND_PASSWORD: password
+      MYSQL_QUOTES_DATABASE: quotes
+      MYSQL_QUOTES_USER: user
+      MYSQL_QUOTES_PASSWORD: password
+    networks:
+#      - public_network
+      - internal_network
+    restart: on-failure:5
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./services/mysql/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh # Setup databases for this project
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - public_network  # Internet access is allowed to check management console for this project
+      - internal_network
+    ports:
+      - 15672:15672 # Web console
+#      - 5672:5672 
+    restart: on-failure:5
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+      - public_network  # Internet access is allowed to check mail for this project
+#      - internal_network
+    ports:
+      - 8025:8025 # Web console
+      - 1025:1025 # SMTP
+    restart: on-failure:5
+    volumes:
+      - mailpit_data:/data
+
+networks:
+  public_network:  # For internet accessible apps/services
+  internal_network:
+    internal: true  # For apps/services that cannot be accessible on the internet
+
+volumes:
+  mysql_data:
+  mailpit_data:

@@ -1,0 +1,16 @@
+# Use the official PHP 8+ image
+FROM php:cli
+
+# Install required system packages
+RUN apt-get update &&\
+    apt-get install -y git unzip curl nano libicu-dev librabbitmq-dev
+
+RUN pecl install amqp 
+RUN docker-php-ext-install intl 
+RUN docker-php-ext-enable amqp 
+
+# Install Composer globally
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html

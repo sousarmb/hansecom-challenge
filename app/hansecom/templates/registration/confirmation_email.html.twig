@@ -1,0 +1,11 @@
+<h1>{{ "hi_please_confirm_your_email"|trans }}</h1>
+
+<p>
+    {{ "please_confirm_your_email_address_by_clicking_the_following_link"|trans }}: <br><br>
+    <a href="{{ signedUrl|raw }}">{{ "confirm_my_email"|trans }}</a>.
+    {{ "this_link_will_expire_in"|trans }} {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.
+</p>
+
+<p>
+    {{ "cheers"|trans }}
+</p>

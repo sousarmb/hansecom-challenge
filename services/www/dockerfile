@@ -1,0 +1,27 @@
+# Use the official PHP 8+ image with Apache
+FROM php:apache
+
+# Install required system packages
+RUN apt-get update &&\
+    apt-get install -y git unzip curl nano libicu-dev librabbitmq-dev
+
+RUN pecl install amqp 
+RUN docker-php-ext-install pdo pdo_mysql intl 
+RUN docker-php-ext-enable amqp 
+
+# Install Composer globally
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Setup virtual host
+COPY ./hansecom.local.conf /etc/apache2/sites-available/
+
+# Enable website
+RUN a2enmod rewrite &&\
+    a2dissite 000* &&\
+    a2ensite hansecom*
+
+# Expose Apache port
+EXPOSE 80

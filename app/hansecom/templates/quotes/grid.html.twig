@@ -1,0 +1,39 @@
+{% set columns = [
+    "symbol",
+	"open",
+	"high",
+	"low",
+	"price",
+	"volume",
+	"latest_trading_day",
+	"previous_close",
+	"change",
+	"change_percent"
+] %}
+<div>
+    <button id="get_quote_requests">{{ "get_quote_requests"|trans }}</button>
+</div>
+<div class="quotes-wrapper">
+    <table id="all_quotes" border=1>
+        <thead>
+            <tr>
+                <td>#</td>
+                <td>{{ "datetime_request"|trans }}</td>
+    {% for col in columns %}
+                <td>{{ col|trans }}
+    {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<script>
+    const intl_errors = {
+        fetching_data: "{{ 'error_fetching_data'|trans }}",
+        empty_data: "{{ 'empty_data'|trans }}"
+    };
+    const request_quote_endpoint = "{{ path('request_quote') }}";
+    const get_quote_requests_endpoint = "{{ path('get_quote_requests') }}";
+</script>
+<script src="{{ asset('js/quotes.js') }}"></script>
