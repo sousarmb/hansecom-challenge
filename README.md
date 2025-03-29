@@ -62,6 +62,6 @@ This project has the following issues to be resolved:
 - the Postman collection;
 - a better suite of unit, integration and funcional tests.
 
-  # That's it!
-  I hope you past the issues and use this application with joy.
-  Thank you.
+# That's it!
+I hope you past the issues and use this application with joy.
+Thank you.
