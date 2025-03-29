@@ -59,6 +59,7 @@ This project has the following issues to be resolved:
 
 ## TBD
 - a Vue application;
+- JWT authentication;
 - the Postman collection;
 - a better suite of unit, integration and funcional tests.
 
